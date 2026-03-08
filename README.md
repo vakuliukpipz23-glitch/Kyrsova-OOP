@@ -3,82 +3,104 @@ classDiagram
 direction LR
 
 %% =====================
-%% CORE DOMAIN
+%% DOMAIN MODEL
 %% =====================
+
 class Habit {
     -id: int
     -title: string
     -priority: int
     -records: List<CompletionRecord>
-    +addRecord(date)
-    +complete()
+    +complete(): void
+    +subscribe(observer: IObserver): void
+    +notify(): void
 }
 
 class CompletionRecord {
-    -date: Date
+    -date: DateTime
     -completed: bool
 }
 
-Habit "1" --> "*" CompletionRecord
+Habit *-- CompletionRecord
+
 
 %% =====================
 %% SERVICE LAYER
 %% =====================
+
 class HabitService {
-    +createHabit(name)
-    +markCompleted(id)
-    +deleteHabit(id)
+    +createHabit(title: string, priority: int): void
+    +markCompleted(habitId: int): void
+    +deleteHabit(habitId: int): void
 }
 
 class StatisticsService {
-    +calculateCurrentStreak(habit)
-    +calculateLongestStreak(habit)
+    +calculateCurrentStreak(habit: Habit): int
+    +calculateLongestStreak(habit: Habit): int
 }
 
 HabitService --> Habit
 StatisticsService --> Habit
 
+
 %% =====================
-%% REPOSITORY (Pattern 1)
+%% REPOSITORY PATTERN
 %% =====================
+
 class IHabitRepository {
     <<interface>>
-    +add(habit)
-    +remove(id)
-    +getAll()
+    +add(habit: Habit): void
+    +remove(id: int): void
+    +getAll(): List<Habit>
 }
 
-class HabitRepository
+class HabitRepository {
+    -habits: List<Habit>
+    +add(habit: Habit): void
+    +remove(id: int): void
+    +getAll(): List<Habit>
+}
 
 IHabitRepository <|.. HabitRepository
 HabitService --> IHabitRepository
 
+
 %% =====================
-%% STRATEGY (Pattern 2)
+%% OBSERVER PATTERN
 %% =====================
-class INotificationStrategy {
+
+class IObserver {
     <<interface>>
-    +notify(message)
+    +update(habit: Habit): void
 }
 
-class EmailNotification
-class PushNotification
+class StatisticsObserver {
+    +update(habit: Habit): void
+}
+
+IObserver <|.. StatisticsObserver
+Habit --> IObserver
+
+
+%% =====================
+%% STRATEGY PATTERN
+%% =====================
+
+class INotificationStrategy {
+    <<interface>>
+    +notify(message: string): void
+}
+
+class EmailNotification {
+    +notify(message: string): void
+}
+
+class PushNotification {
+    +notify(message: string): void
+}
 
 INotificationStrategy <|.. EmailNotification
 INotificationStrategy <|.. PushNotification
 
-HabitService --> INotificationStrategy
-
-%% =====================
-%% OBSERVER (Pattern 3)
-%% =====================
-class IObserver {
-    <<interface>>
-    +update()
-}
-
-class StatisticsObserver
-
-IObserver <|.. StatisticsObserver
-Habit --> IObserver
+StatisticsObserver --> INotificationStrategy
 ```
