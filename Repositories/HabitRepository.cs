@@ -6,7 +6,7 @@ namespace Kyrsova_OOP.Repositories
 {
     public class HabitRepository : IHabitRepository
     {
-        private static List<Habit> habits = new List<Habit>();
+        private List<Habit> habits = new();
 
         public void Add(Habit habit)
         {
@@ -16,6 +16,11 @@ namespace Kyrsova_OOP.Repositories
         public void Remove(int id)
         {
             habits.RemoveAll(h => h.Id == id);
+        }
+
+        public Habit? GetById(int id)
+        {
+            return habits.FirstOrDefault(h => h.Id == id);
         }
 
         public List<Habit> GetAll()
