@@ -1,0 +1,23 @@
+@model List<Kyrsova_OOP.Models.Habit>
+
+<h2>Habit Tracker</h2>
+
+<table border="1">
+    <tr>
+        <th>Habit</th>
+        <th>Completed</th>
+        <th>Action</th>
+    </tr>
+
+@foreach (var habit in Model)
+{
+    <tr>
+        <td>@habit.Title</td>
+        <td>@habit.Records.Count</td>
+        <td>
+            <a href="/Habit/Complete/@habit.Id">Complete</a>
+        </td>
+    </tr>
+}
+
+</table>
