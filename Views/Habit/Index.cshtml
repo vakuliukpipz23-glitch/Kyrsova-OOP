@@ -1,21 +1,24 @@
 @model List<Kyrsova_OOP.Models.Habit>
 
-<h2>Habit Tracker</h2>
+<h1>Habit Tracker</h1>
 
-<table border="1">
+<table border="1" cellpadding="10">
     <tr>
         <th>Habit</th>
-        <th>Completed</th>
-        <th>Action</th>
+        <th>Current Streak</th>
+        <th>Total Completions</th>
+        <th>Actions</th>
     </tr>
 
 @foreach (var habit in Model)
 {
     <tr>
         <td>@habit.Title</td>
-        <td>@habit.Records.Count</td>
+        <td>@habit.GetCurrentStreak()</td>
+        <td>@habit.GetTotalCompletions()</td>
         <td>
-            <a href="/Habit/Complete/@habit.Id">Complete</a>
+            <a href="/Habit/Complete/@habit.Id">Complete</a> |
+            <a href="/Habit/Delete/@habit.Id">Delete</a>
         </td>
     </tr>
 }

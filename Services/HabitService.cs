@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 using Kyrsova_OOP.Models;
 using Kyrsova_OOP.Repositories;
 
@@ -6,7 +6,7 @@ namespace Kyrsova_OOP.Services
 {
     public class HabitService
     {
-        private IHabitRepository repository;
+        private readonly IHabitRepository repository;
 
         public HabitService(IHabitRepository repository)
         {
@@ -15,9 +15,11 @@ namespace Kyrsova_OOP.Services
 
         public void CreateHabit(string title, int priority)
         {
-            var habit = new Habit
+            int id = repository.GetAll().Count + 1;
+
+            Habit habit = new Habit
             {
-                Id = repository.GetAll().Count + 1,
+                Id = id,
                 Title = title,
                 Priority = priority
             };
@@ -25,17 +27,29 @@ namespace Kyrsova_OOP.Services
             repository.Add(habit);
         }
 
-        public void MarkCompleted(int id)
+        public void CompleteHabit(int id)
         {
-            var habit = repository.GetAll().FirstOrDefault(h => h.Id == id);
+            var habit = repository.GetById(id);
 
             if (habit != null)
+            {
                 habit.Complete();
+            }
         }
 
-        public List<Habit> GetAll()
+        public List<Habit> GetAllHabits()
         {
             return repository.GetAll();
+        }
+
+        public Habit? GetHabit(int id)
+        {
+            return repository.GetById(id);
+        }
+
+        public void DeleteHabit(int id)
+        {
+            repository.Remove(id);
         }
     }
 }
