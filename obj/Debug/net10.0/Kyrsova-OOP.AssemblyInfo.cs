@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Kyrsova-OOP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2b53899867cd03402576c8d2efbfba3a72363cc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+316ad2ec1ccf2b9b1edbcfe54da13f5eb8b763d5")]
 [assembly: System.Reflection.AssemblyProductAttribute("Kyrsova-OOP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Kyrsova-OOP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

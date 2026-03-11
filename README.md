@@ -104,3 +104,4 @@ INotificationStrategy <|.. PushNotification
 
 StatisticsObserver --> INotificationStrategy
 ```
+![alt text](image.png)
