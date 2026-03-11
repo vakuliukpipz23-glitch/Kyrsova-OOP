@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kyrsova_OOP.Observers;
 
 namespace Kyrsova_OOP.Models
 {
@@ -15,25 +14,9 @@ namespace Kyrsova_OOP.Models
 
         public List<CompletionRecord> Records { get; set; } = new();
 
-        private List<IObserver> observers = new();
-
-        public void Subscribe(IObserver observer)
-        {
-            observers.Add(observer);
-        }
-
-        private void NotifyObservers()
-        {
-            foreach (var observer in observers)
-            {
-                observer.Update(this);
-            }
-        }
-
         public void Complete()
         {
             Records.Add(new CompletionRecord(DateTime.Now, true));
-            NotifyObservers();
         }
 
         public int GetCurrentStreak()
@@ -76,6 +59,14 @@ namespace Kyrsova_OOP.Models
             }
 
             return longest;
+        }
+
+        public double GetCompletionRate()
+        {
+            if (Records.Count == 0)
+                return 0;
+
+            return (double)GetTotalCompletions() / Records.Count * 100;
         }
     }
 }

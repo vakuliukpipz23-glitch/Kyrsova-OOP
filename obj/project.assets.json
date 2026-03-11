@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Паша\\Documents\\GitHub\\Kyrsova-OOP\\Kyrsova-OOP.csproj",
+      "projectUniqueName": "C:\\Users\\Паша\\Desktop\\Kyrsova_OOP\\Kyrsova-OOP\\Kyrsova-OOP.csproj",
       "projectName": "Kyrsova-OOP",
-      "projectPath": "C:\\Users\\Паша\\Documents\\GitHub\\Kyrsova-OOP\\Kyrsova-OOP.csproj",
+      "projectPath": "C:\\Users\\Паша\\Desktop\\Kyrsova_OOP\\Kyrsova-OOP\\Kyrsova-OOP.csproj",
       "packagesPath": "C:\\Users\\Паша\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Паша\\Documents\\GitHub\\Kyrsova-OOP\\obj\\",
+      "outputPath": "C:\\Users\\Паша\\Desktop\\Kyrsova_OOP\\Kyrsova-OOP\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Паша\\AppData\\Roaming\\NuGet\\NuGet.Config"

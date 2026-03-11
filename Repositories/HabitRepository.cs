@@ -6,7 +6,7 @@ namespace Kyrsova_OOP.Repositories
 {
     public class HabitRepository : IHabitRepository
     {
-        private static List<Habit> habits = new List<Habit>();
+        private static List<Habit> habits = new();
 
         public void Add(Habit habit)
         {

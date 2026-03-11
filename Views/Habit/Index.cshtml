@@ -1,5 +1,17 @@
 @model List<Kyrsova_OOP.Models.Habit>
 
+<h2>Global Statistics</h2>
+
+<p>Total habits: @ViewBag.TotalHabits</p>
+<p>Total completions: @ViewBag.TotalCompletions</p>
+<p>Best streak: @ViewBag.BestStreak</p>
+
+<hr />
+
+<a href="/Habit/Add">Add Habit</a>
+
+<br /><br />
+
 <h1>Habit Tracker</h1>
 
 <table border="1" cellpadding="10">
@@ -7,7 +19,8 @@
 <th>Habit</th>
 <th>Current Streak</th>
 <th>Longest Streak</th>
-<th>Total Completions</th>
+<th>Total</th>
+<th>Rate</th>
 <th>Actions</th>
 </tr>
 
@@ -18,6 +31,7 @@
 <td>@habit.GetCurrentStreak()</td>
 <td>@habit.GetLongestStreak()</td>
 <td>@habit.GetTotalCompletions()</td>
+<td>@habit.GetCompletionRate().ToString("0.0") %</td>
 <td>
 <a href="/Habit/Complete/@habit.Id">Complete</a> |
 <a href="/Habit/Delete/@habit.Id">Delete</a>
