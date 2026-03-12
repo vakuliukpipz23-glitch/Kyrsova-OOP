@@ -19,46 +19,79 @@ namespace Kyrsova_OOP.Models
             Records.Add(new CompletionRecord(DateTime.Now, true));
         }
 
+        public bool IsCompletedToday()
+        {
+            return Records.Any(r => r.Date.Date == DateTime.Today && r.Completed);
+        }
+
         public int GetCurrentStreak()
         {
+            if (Records.Count == 0)
+                return 0;
+
             int streak = 0;
 
-            foreach (var record in Records.OrderByDescending(r => r.Date))
+            var dates = Records
+                .Where(r => r.Completed)
+                .Select(r => r.Date.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            DateTime expectedDate = DateTime.Today;
+
+            foreach (var date in dates)
             {
-                if (record.Completed)
+                if (date == expectedDate)
+                {
                     streak++;
+                    expectedDate = expectedDate.AddDays(-1);
+                }
                 else
+                {
                     break;
+                }
             }
 
             return streak;
         }
 
-        public int GetTotalCompletions()
-        {
-            return Records.Count(r => r.Completed);
-        }
-
         public int GetLongestStreak()
         {
+            if (Records.Count == 0)
+                return 0;
+
+            var dates = Records
+                .Where(r => r.Completed)
+                .Select(r => r.Date.Date)
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+
             int longest = 0;
             int current = 0;
 
-            foreach (var record in Records.OrderBy(r => r.Date))
+            for (int i = 0; i < dates.Count; i++)
             {
-                if (record.Completed)
+                if (i == 0 || dates[i] == dates[i - 1].AddDays(1))
                 {
                     current++;
-                    if (current > longest)
-                        longest = current;
                 }
                 else
                 {
-                    current = 0;
+                    current = 1;
                 }
+
+                if (current > longest)
+                    longest = current;
             }
 
             return longest;
+        }
+
+        public int GetTotalCompletions()
+        {
+            return Records.Count(r => r.Completed);
         }
 
         public double GetCompletionRate()

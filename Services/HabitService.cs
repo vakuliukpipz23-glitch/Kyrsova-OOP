@@ -42,6 +42,11 @@ namespace Kyrsova_OOP.Services
             return repository.GetAll();
         }
 
+        public Habit? GetHabit(int id)
+        {
+            return repository.GetById(id);
+        }
+
         public void DeleteHabit(int id)
         {
             repository.Remove(id);

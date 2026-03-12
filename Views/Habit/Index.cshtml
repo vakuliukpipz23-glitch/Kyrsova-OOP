@@ -17,6 +17,7 @@
 <table border="1" cellpadding="10">
 <tr>
 <th>Habit</th>
+<th>Completed Today</th>
 <th>Current Streak</th>
 <th>Longest Streak</th>
 <th>Total</th>
@@ -28,12 +29,23 @@
 {
 <tr>
 <td>@habit.Title</td>
+<td>
+@if (habit.IsCompletedToday())
+{
+    <span style="color:green;">✔</span>
+}
+else
+{
+    <span style="color:red;">✘</span>
+}
+</td>
 <td>@habit.GetCurrentStreak()</td>
 <td>@habit.GetLongestStreak()</td>
 <td>@habit.GetTotalCompletions()</td>
 <td>@habit.GetCompletionRate().ToString("0.0") %</td>
 <td>
 <a href="/Habit/Complete/@habit.Id">Complete</a> |
+<a href="/Habit/History/@habit.Id">History</a> |
 <a href="/Habit/Delete/@habit.Id">Delete</a>
 </td>
 </tr>

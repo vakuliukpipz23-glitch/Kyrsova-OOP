@@ -44,6 +44,16 @@ namespace Kyrsova_OOP.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult History(int id)
+        {
+            var habit = service.GetHabit(id);
+
+            if (habit == null)
+                return RedirectToAction("Index");
+
+            return View(habit);
+        }
+
         public IActionResult Add()
         {
             return View();
