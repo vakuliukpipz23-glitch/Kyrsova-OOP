@@ -32,11 +32,11 @@
 <td>
 @if (habit.IsCompletedToday())
 {
-    <span style="color:green;">✔</span>
+    <span style="color:green;">Completed</span>
 }
 else
 {
-    <span style="color:red;">✘</span>
+    <span style="color:gray;">Not completed</span>
 }
 </td>
 <td>@habit.GetCurrentStreak()</td>
