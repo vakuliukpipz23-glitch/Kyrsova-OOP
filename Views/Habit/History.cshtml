@@ -1,31 +1,27 @@
 @model Kyrsova_OOP.Models.Habit
 
-<h2>Habit History</h2>
+<h2>Історія виконання</h2>
 
-<h3>@Model.Title</h3>
+<p><b>Звичка:</b> @Model.Title</p>
 
-<p>Current streak: @Model.GetCurrentStreak()</p>
-<p>Longest streak: @Model.GetLongestStreak()</p>
-<p>Total completions: @Model.GetTotalCompletions()</p>
+<p><b>Дата створення:</b> @Model.CreatedDate.ToShortDateString()</p>
 
-<hr />
+<h3>Дати виконання</h3>
 
-<table border="1" cellpadding="8">
-<tr>
-<th>Date</th>
-<th>Status</th>
-</tr>
-
-@foreach (var record in Model.Records.OrderByDescending(r => r.Date))
+@if (Model.Records.Count == 0)
 {
-<tr>
-<td>@record.Date.ToString("dd.MM.yyyy")</td>
-<td>✔</td>
-</tr>
+<p>Ще немає виконань</p>
+}
+else
+{
+<ul>
+
+@foreach (var r in Model.Records)
+{
+<li>@r.Date.ToShortDateString()</li>
 }
 
-</table>
+</ul>
+}
 
-<br>
-
-<a href="/Habit">Back</a>
+<a href="/Habit">Назад</a>

@@ -1,0 +1,40 @@
+@model List<Kyrsova_OOP.Models.Habit>
+
+<h2>Глобальна статистика</h2>
+
+<p>Всього звичок: @(ViewBag.TotalHabits ?? 0)</p>
+
+<p>Всього завершених: @(ViewBag.TotalCompletions ?? 0)</p>
+
+<p>Найкраща серія: @(ViewBag.BestStreak ?? 0)</p>
+
+<hr />
+
+<h3>Історія виконання звичок</h3>
+
+@foreach (var habit in Model)
+{
+    <h4>@habit.Title</h4>
+
+    <p><b>Дата створення:</b> @habit.CreatedDate.ToShortDateString()</p>
+
+    <b>Список виконань:</b>
+
+    if (habit.Records.Count == 0)
+    {
+        <p>Немає виконань</p>
+    }
+    else
+    {
+        <ul>
+        @foreach (var r in habit.Records)
+        {
+            <li>@r.Date.ToShortDateString()</li>
+        }
+        </ul>
+    }
+
+    <hr />
+}
+
+<a href="/Habit">Назад</a>

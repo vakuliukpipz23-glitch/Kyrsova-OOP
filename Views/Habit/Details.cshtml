@@ -1,36 +1,13 @@
 @model Kyrsova_OOP.Models.Habit
 
-<h2>Habit Details</h2>
+<h2>@Model.Title</h2>
 
-<h3>@Model.Title</h3>
+<p>Created: @Model.CreatedDate</p>
 
-<p>Priority: @Model.Priority</p>
+<p>Current streak: @ViewBag.CurrentStreak</p>
 
-<p>Current streak: @Model.GetCurrentStreak()</p>
-<p>Longest streak: @Model.GetLongestStreak()</p>
-<p>Total completions: @Model.GetTotalCompletions()</p>
-<p>Completion rate: @Model.GetCompletionRate().ToString("0.0") %</p>
+<p>Longest streak: @ViewBag.LongestStreak</p>
 
-<hr>
-
-<h3>History</h3>
-
-<table border="1" cellpadding="8">
-<tr>
-<th>Date</th>
-<th>Status</th>
-</tr>
-
-@foreach (var record in Model.Records.OrderByDescending(r => r.Date))
-{
-<tr>
-<td>@record.Date.ToString("dd.MM.yyyy")</td>
-<td>✔</td>
-</tr>
-}
-
-</table>
-
-<br>
+<p>Total completions: @ViewBag.Total</p>
 
 <a href="/Habit">Back</a>

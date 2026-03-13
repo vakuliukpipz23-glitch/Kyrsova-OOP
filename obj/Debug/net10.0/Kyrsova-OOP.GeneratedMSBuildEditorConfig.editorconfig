@@ -30,12 +30,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGFiaXRcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Паша/Desktop/Kyrsova_OOP/Kyrsova-OOP/Views/Habit/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGFiaXRcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Паша/Desktop/Kyrsova_OOP/Kyrsova-OOP/Views/Habit/History.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGFiaXRcSGlzdG9yeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Паша/Desktop/Kyrsova_OOP/Kyrsova-OOP/Views/Habit/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGFiaXRcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Паша/Desktop/Kyrsova_OOP/Kyrsova-OOP/Views/Habit/Statistics.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGFiaXRcU3RhdGlzdGljcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Паша/Desktop/Kyrsova_OOP/Kyrsova-OOP/Views/Home/Index.cshtml]

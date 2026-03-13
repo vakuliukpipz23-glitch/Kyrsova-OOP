@@ -1,21 +1,16 @@
-using System.Collections.Generic;
-using System.Linq;
 using Kyrsova_OOP.Models;
 
 namespace Kyrsova_OOP.Repositories
 {
     public class HabitRepository : IHabitRepository
     {
-        private static List<Habit> habits = new();
+        private readonly List<Habit> habits = new();
 
-        public void Add(Habit habit)
-        {
-            habits.Add(habit);
-        }
+        private int nextId = 1;
 
-        public void Remove(int id)
+        public List<Habit> GetAll()
         {
-            habits.RemoveAll(h => h.Id == id);
+            return habits;
         }
 
         public Habit? GetById(int id)
@@ -23,9 +18,24 @@ namespace Kyrsova_OOP.Repositories
             return habits.FirstOrDefault(h => h.Id == id);
         }
 
-        public List<Habit> GetAll()
+        public void Add(Habit habit)
         {
-            return habits;
+            habit.Id = nextId++;
+            habits.Add(habit);
+        }
+
+        public void Update(Habit habit)
+        {
+        }
+
+        public void Delete(int id)
+        {
+            var habit = GetById(id);
+
+            if (habit != null)
+            {
+                habits.Remove(habit);
+            }
         }
     }
 }
