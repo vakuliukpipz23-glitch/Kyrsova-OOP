@@ -1,38 +1,32 @@
 @model List<Kyrsova_OOP.Models.Habit>
 
-<h2>Глобальна статистика</h2>
+<h1>Глобальна статистика</h1>
 
-<p>Всього звичок: @(ViewBag.TotalHabits ?? 0)</p>
-
-<p>Всього завершених: @(ViewBag.TotalCompletions ?? 0)</p>
-
-<p>Найкраща серія: @(ViewBag.BestStreak ?? 0)</p>
+<p><b>Всього звичок:</b> @ViewBag.TotalHabits</p>
+<p><b>Всього виконань:</b> @ViewBag.TotalCompletions</p>
+<p><b>Найкраща серія:</b> @ViewBag.BestStreak</p>
 
 <hr />
 
-<h3>Історія виконання звичок</h3>
+<h2>Статистика по кожній звичці</h2>
 
 @foreach (var habit in Model)
 {
-    <h4>@habit.Title</h4>
+    int totalDays = (DateTime.Today - habit.CreatedDate).Days + 1;
+    int completed = habit.GetTotalCompletions();
+    int missed = totalDays - completed;
+
+    <h3>@habit.Title</h3>
 
     <p><b>Дата створення:</b> @habit.CreatedDate.ToShortDateString()</p>
 
-    <b>Список виконань:</b>
-
-    if (habit.Records.Count == 0)
-    {
-        <p>Немає виконань</p>
-    }
-    else
-    {
-        <ul>
-        @foreach (var r in habit.Records)
-        {
-            <li>@r.Date.ToShortDateString()</li>
-        }
-        </ul>
-    }
+    <ul>
+        <li>Виконано днів: @completed</li>
+        <li>Пропущено днів: @missed</li>
+        <li>Поточна серія: @habit.GetCurrentStreak()</li>
+        <li>Найдовша серія: @habit.GetLongestStreak()</li>
+        <li>Успішність: @habit.GetCompletionRate().ToString("0.0") %</li>
+    </ul>
 
     <hr />
 }

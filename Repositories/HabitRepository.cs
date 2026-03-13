@@ -1,12 +1,36 @@
 using Kyrsova_OOP.Models;
+using System.Text.Json;
 
 namespace Kyrsova_OOP.Repositories
 {
     public class HabitRepository : IHabitRepository
     {
-        private readonly List<Habit> habits = new();
+        private List<Habit> habits = new();
 
         private int nextId = 1;
+
+        private readonly string filePath = "habits.json";
+
+        public HabitRepository()
+        {
+            if (File.Exists(filePath))
+            {
+                var json = File.ReadAllText(filePath);
+
+                habits = JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
+
+                if (habits.Any())
+                {
+                    nextId = habits.Max(h => h.Id) + 1;
+                }
+            }
+        }
+
+        private void Save()
+        {
+            var json = JsonSerializer.Serialize(habits);
+            File.WriteAllText(filePath, json);
+        }
 
         public List<Habit> GetAll()
         {
@@ -22,10 +46,12 @@ namespace Kyrsova_OOP.Repositories
         {
             habit.Id = nextId++;
             habits.Add(habit);
+            Save();
         }
 
         public void Update(Habit habit)
         {
+            Save();
         }
 
         public void Delete(int id)
@@ -35,6 +61,7 @@ namespace Kyrsova_OOP.Repositories
             if (habit != null)
             {
                 habits.Remove(habit);
+                Save();
             }
         }
     }
