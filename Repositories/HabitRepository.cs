@@ -9,16 +9,15 @@ namespace Kyrsova_OOP.Repositories
 
         private int nextId = 1;
 
-        private readonly string filePath = "habits.json";
+        private readonly string filePath;
 
-        public HabitRepository()
+        public HabitRepository(string? filePath = null)
         {
-            if (File.Exists(filePath))
+            this.filePath = filePath ?? "habits.json";
+            if (File.Exists(this.filePath))
             {
-                var json = File.ReadAllText(filePath);
-
+                var json = File.ReadAllText(this.filePath);
                 habits = JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
-
                 if (habits.Any())
                 {
                     nextId = habits.Max(h => h.Id) + 1;

@@ -1,18 +1,17 @@
-<h2>Add Habit</h2>
+@{
+		ViewData["Title"] = "Add Habit";
+}
 
-<form method="post">
-
-<label>Name</label>
-<br>
-
-<input type="text" name="title" required />
-
-<br><br>
-
-<button type="submit">Add</button>
-
-</form>
-
-<br>
-
-<a href="/Habit">Back</a>
+<div class="dashboard">
+	<div class="card">
+		<h2 class="card-title">Add Habit</h2>
+		<form method="post">
+			<label class="muted">Name</label>
+			<input class="form-control" type="text" name="title" required />
+			<div style="margin-top:16px">
+				<button class="btn" type="submit">Add</button>
+				<a class="btn btn-secondary" asp-controller="Habit" asp-action="Index">Back</a>
+			</div>
+		</form>
+	</div>
+</div>

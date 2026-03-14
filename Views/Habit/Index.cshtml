@@ -1,58 +1,65 @@
 @model List<Kyrsova_OOP.Models.Habit>
 
-<h1>Трекер звичок</h1>
+<div class="dashboard">
+    <div class="card">
+        <div class="dashboard-header">
+            <div>
+                <h1>Трекер звичок</h1>
+                <p class="muted">Слідкуй за своїми звичками, тримай прогрес у фокусі.</p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="/Habit/Add" class="btn">+ Додати звичку</a>
+                <a href="/Habit/Statistics" class="btn btn-secondary">Статистика</a>
+            </div>
+        </div>
 
-<a href="/Habit/Add">Додати звичку</a> |
-<a href="/Habit/Statistics">Статистика</a>
+        <div class="dashboard-section">
+            <div class="card" style="flex: 1;">
+                <div class="card-title">Сьогодні</div>
+                <div class="calendar">
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        <div class="calendar-day @(Model.Count > i && Model[i].IsCompletedToday() ? "completed" : "")"></div>
+                    }
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-inner" style="width:@(Model.Any() ? Model.Average(h => h.GetCompletionRate()) : 0)%"></div>
+                </div>
+                <p class="muted">Прогрес сьогодні: <strong>@(Model.Any() ? Model.Average(h => h.GetCompletionRate()).ToString("0.0") : "0") %</strong></p>
+            </div>
 
-<table border="1">
+            <div class="card" style="flex: 1;">
+                <div class="card-title">Статистика</div>
+                <ul class="stats-list">
+                    <li><strong>Звичок:</strong> @Model.Count</li>
+                    <li><strong>Завершено:</strong> @Model.Sum(h => h.GetTotalCompletions())</li>
+                    <li><strong>Найдовша серія:</strong> @(Model.Any() ? Model.Max(h => h.GetLongestStreak()) : 0)</li>
+                    <li><strong>Середній успіх:</strong> @(Model.Any() ? ((int)Model.Average(h => h.GetCompletionRate())) : 0) %</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-<tr>
-<th>Звичка</th>
-<th>Створено</th>
-<th>Завершено сьогодні</th>
-<th>Поточна серія</th>
-<th>Найдовша серія</th>
-<th>Всього</th>
-<th>Оцінити</th>
-<th>Дії</th>
-</tr>
-
-@foreach (var habit in Model)
-{
-<tr>
-
-<td>@habit.Title</td>
-
-<td>@habit.CreatedDate.ToShortDateString()</td>
-
-<td>
-@(habit.IsCompletedToday() ? "Завершено" : "Ні")
-</td>
-
-<td>@habit.GetCurrentStreak()</td>
-
-<td>@habit.GetLongestStreak()</td>
-
-<td>@habit.GetTotalCompletions()</td>
-
-<td>@habit.GetCompletionRate().ToString("0.0") %</td>
-
-<td>
-
-<a href="/Habit/Complete/@habit.Id">Завершити</a> |
-
-<a href="/Habit/Details/@habit.Id">Деталі</a> |
-
-<a href="/Habit/History/@habit.Id">Історія</a> |
-
-<a href="/Habit/Edit/@habit.Id">Редагувати</a> |
-
-<a href="/Habit/Delete/@habit.Id">Видалити</a>
-
-</td>
-
-</tr>
-}
-
-</table>
+    <div class="card">
+        <div class="card-title">Список звичок</div>
+        <div class="habit-list">
+            @foreach (var habit in Model)
+            {
+                <div class="habit-card">
+                    <div class="habit-card__main">
+                        <div class="habit-title">@habit.Title</div>
+                        <div class="habit-meta">Створено: @habit.CreatedDate.ToShortDateString()</div>
+                        <div class="habit-meta">Поточна серія: @habit.GetCurrentStreak() / Найдовша: @habit.GetLongestStreak()</div>
+                    </div>
+                    <div class="habit-actions">
+                        <a href="/Habit/Complete/@habit.Id" class="btn btn-success">Завершити</a>
+                        <a href="/Habit/Details/@habit.Id" class="btn btn-secondary">Деталі</a>
+                        <a href="/Habit/History/@habit.Id" class="btn btn-secondary">Історія</a>
+                        <a href="/Habit/Edit/@habit.Id" class="btn btn-secondary">Редагувати</a>
+                        <a href="/Habit/Delete/@habit.Id" class="btn btn-danger">Видалити</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

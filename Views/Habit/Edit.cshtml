@@ -1,21 +1,22 @@
 @model Kyrsova_OOP.Models.Habit
 
-<h2>Edit Habit</h2>
+@{
+		ViewData["Title"] = "Edit Habit";
+}
 
-<form method="post">
+<div class="dashboard">
+	<div class="card">
+		<h2 class="card-title">Edit Habit</h2>
+		<form method="post">
+			<input type="hidden" name="id" value="@Model.Id" />
 
-<input type="hidden" name="id" value="@Model.Id" />
+			<label class="muted">Name</label>
+			<input class="form-control" type="text" name="title" value="@Model.Title" />
 
-<label>Name</label>
-
-<br>
-
-<input type="text" name="title" value="@Model.Title" />
-
-<br><br>
-
-<button type="submit">Save</button>
-
-</form>
-
-<a href="/Habit">Back</a>
+			<div style="margin-top:16px">
+				<button class="btn" type="submit">Save</button>
+				<a class="btn btn-secondary" asp-controller="Habit" asp-action="Index">Back</a>
+			</div>
+		</form>
+	</div>
+</div>

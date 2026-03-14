@@ -1,34 +1,75 @@
 @model List<Kyrsova_OOP.Models.Habit>
 
-<h1>Глобальна статистика</h1>
-
-<p><b>Всього звичок:</b> @ViewBag.TotalHabits</p>
-<p><b>Всього виконань:</b> @ViewBag.TotalCompletions</p>
-<p><b>Найкраща серія:</b> @ViewBag.BestStreak</p>
-
-<hr />
-
-<h2>Статистика по кожній звичці</h2>
-
-@foreach (var habit in Model)
-{
-    int totalDays = (DateTime.Today - habit.CreatedDate).Days + 1;
-    int completed = habit.GetTotalCompletions();
-    int missed = totalDays - completed;
-
-    <h3>@habit.Title</h3>
-
-    <p><b>Дата створення:</b> @habit.CreatedDate.ToShortDateString()</p>
-
-    <ul>
-        <li>Виконано днів: @completed</li>
-        <li>Пропущено днів: @missed</li>
-        <li>Поточна серія: @habit.GetCurrentStreak()</li>
-        <li>Найдовша серія: @habit.GetLongestStreak()</li>
-        <li>Успішність: @habit.GetCompletionRate().ToString("0.0") %</li>
-    </ul>
-
-    <hr />
+@{
+    ViewData["Title"] = "Статистика";
 }
 
-<a href="/Habit">Назад</a>
+<div class="card">
+    <div class="card-title">Глобальна статистика</div>
+    <div class="dashboard-section">
+        <div style="min-width:220px;">
+            <p><strong>Всього звичок:</strong> @ViewBag.TotalHabits</p>
+            <p><strong>Всього виконань:</strong> @ViewBag.TotalCompletions</p>
+            <p><strong>Найкраща серія:</strong> @ViewBag.BestStreak</p>
+        </div>
+        <div style="flex:1">
+            <div class="chart">
+                <canvas id="habitsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Статистика по звичках</div>
+    <div class="habit-list">
+        @foreach(var h in Model)
+        {
+            <div class="habit-card">
+                <div class="habit-card__main">
+                    <div class="habit-title">@h.Title</div>
+                    <div class="habit-meta">Створено: @h.CreatedDate.ToShortDateString()</div>
+                    <div class="habit-meta">Виконань: @h.GetTotalCompletions()</div>
+                </div>
+                <div class="habit-actions">
+                    @{
+                        var longest = h.GetLongestStreak();
+                        string dayLabel;
+                        if (longest % 10 == 1 && longest % 100 != 11) { dayLabel = "день"; }
+                        else if (longest % 10 >= 2 && longest % 10 <= 4 && !(longest % 100 >= 12 && longest % 100 <= 14)) { dayLabel = "дні"; }
+                        else { dayLabel = "днів"; }
+                    }
+                    <span class="badge">@longest @dayLabel</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(h => h.Title)));
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(h => h.GetTotalCompletions())));
+
+        const ctx = document.getElementById('habitsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Виконань',
+                    data: data,
+                    backgroundColor: labels.map((_,i)=>['#258cfb','#a259ff','#ff6b6b','#ffb300','#00c48c'][i%5]),
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision:0 } } }
+            }
+        });
+    </script>
+}

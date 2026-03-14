@@ -1,34 +1,38 @@
 @model Kyrsova_OOP.Models.Habit
 
-<h2>Історія виконання звички</h2>
-
-<p><b>@Model.Title</b></p>
-
-<p><b>Дата створення:</b> @Model.CreatedDate.ToShortDateString()</p>
-
-<h3>Історія по днях</h3>
-
-<ul>
-
 @{
-    var start = Model.CreatedDate.Date;
-    var end = DateTime.Today.Date;
+    ViewData["Title"] = "History - " + (Model?.Title ?? "Habit");
 }
 
-@for (var day = start; day <= end; day = day.AddDays(1))
-{
-    bool done = Model.Records.Any(r => r.Date.Date == day);
+<div class="dashboard">
+  <div class="card">
+    <h2 class="card-title">Історія виконання звички</h2>
+    <p><strong>@Model.Title</strong></p>
+    <p><strong>Дата створення:</strong> @Model.CreatedDate.ToShortDateString()</p>
 
-    if (done)
-    {
-        <li>@day.ToShortDateString() — виконано</li>
+    <h3>Історія по днях</h3>
+    <ul class="list-group">
+    @{
+        var start = Model.CreatedDate.Date;
+        var end = DateTime.Today.Date;
     }
-    else
+
+    @for (var day = start; day <= end; day = day.AddDays(1))
     {
-        <li>@day.ToShortDateString() — пропущено</li>
+        bool done = Model.Records.Any(r => r.Date.Date == day);
+        if (done)
+        {
+            <li class="list-group-item">@day.ToShortDateString() — виконано</li>
+        }
+        else
+        {
+            <li class="list-group-item">@day.ToShortDateString() — пропущено</li>
+        }
     }
-}
+    </ul>
 
-</ul>
-
-<a href="/Habit">Назад</a>
+    <div style="margin-top:16px">
+      <a class="btn btn-secondary" asp-controller="Habit" asp-action="Index">Назад</a>
+    </div>
+  </div>
+</div>

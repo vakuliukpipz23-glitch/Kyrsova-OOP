@@ -1,13 +1,22 @@
 @model Kyrsova_OOP.Models.Habit
 
-<h2>@Model.Title</h2>
+@{
+		ViewData["Title"] = Model?.Title ?? "Habit Details";
+}
 
-<p>Created: @Model.CreatedDate</p>
+<div class="dashboard">
+	<div class="card">
+		<h2 class="card-title">@Model.Title</h2>
+		<p class="habit-meta">Created: @Model.CreatedDate.ToShortDateString()</p>
 
-<p>Current streak: @ViewBag.CurrentStreak</p>
+		<ul class="stats-list">
+			<li><strong>Current streak:</strong> @ViewBag.CurrentStreak</li>
+			<li><strong>Longest streak:</strong> @ViewBag.LongestStreak</li>
+			<li><strong>Total completions:</strong> @ViewBag.Total</li>
+		</ul>
 
-<p>Longest streak: @ViewBag.LongestStreak</p>
-
-<p>Total completions: @ViewBag.Total</p>
-
-<a href="/Habit">Back</a>
+		<div style="margin-top:16px">
+			<a class="btn btn-secondary" asp-controller="Habit" asp-action="Index">Back</a>
+		</div>
+	</div>
+</div>
