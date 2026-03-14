@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyrsova-OOP", "Kyrsova-OOP.csproj", "{ACBCCE87-1AAC-BC17-7903-0F0865CDE8EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyrsova_OOP.Tests", "Kyrsova_OOP.Tests\Kyrsova_OOP.Tests.csproj", "{D3D85D2F-84ED-496D-8149-B5E6FA2AA021}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kyrsova_OOP.Tests", "..\Kyrsova_OOP.Tests\Kyrsova_OOP.Tests.csproj", "{D3D85D2F-84ED-496D-8149-B5E6FA2AA021}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

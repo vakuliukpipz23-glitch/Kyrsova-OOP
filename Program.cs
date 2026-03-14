@@ -2,6 +2,8 @@ using Kyrsova_OOP.Repositories;
 using Kyrsova_OOP.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var db = new DatabaseContext();
+db.Initialize();
 
 builder.Services.AddControllersWithViews();
 

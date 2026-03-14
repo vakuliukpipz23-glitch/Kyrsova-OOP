@@ -1,3 +1,5 @@
+using System;
+
 namespace Kyrsova_OOP.Models
 {
     public class HabitRecord
