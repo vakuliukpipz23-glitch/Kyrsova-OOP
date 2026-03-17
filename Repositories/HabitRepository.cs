@@ -149,16 +149,27 @@ namespace Kyrsova_OOP.Repositories
 
         foreach (var record in habit.Records)
         {
-            var command = connection.CreateCommand();
+            // Avoid re-inserting existing records (duplicate inserts can cause completion rate > 100%)
+            var checkCommand = connection.CreateCommand();
+            checkCommand.CommandText =
+                "SELECT COUNT(1) FROM HabitRecords WHERE HabitId = $habitId AND Date = $date";
+            checkCommand.Parameters.AddWithValue("$habitId", habit.Id);
+            checkCommand.Parameters.AddWithValue("$date", record.Date.ToString());
 
-            command.CommandText =
+            var exists = Convert.ToInt32(checkCommand.ExecuteScalar()) > 0;
+            if (exists)
+                continue;
+
+            var insertCommand = connection.CreateCommand();
+
+            insertCommand.CommandText =
             @"INSERT INTO HabitRecords (HabitId, Date)
               VALUES ($habitId, $date)";
 
-            command.Parameters.AddWithValue("$habitId", habit.Id);
-            command.Parameters.AddWithValue("$date", record.Date.ToString());
+            insertCommand.Parameters.AddWithValue("$habitId", habit.Id);
+            insertCommand.Parameters.AddWithValue("$date", record.Date.ToString());
 
-            command.ExecuteNonQuery();
+            insertCommand.ExecuteNonQuery();
         }
     }
 

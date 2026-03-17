@@ -120,7 +120,9 @@ namespace Kyrsova_OOP.Models
             var total = GetTotalCompletions();
             var days = (DateTime.Today - CreatedDate).Days + 1;
             if (days <= 0) return 0;
-            return (double)total / days * 100.0;
+
+            var rate = (double)total / days * 100.0;
+            return Math.Min(100, rate); // Ensure values never exceed 100%
         }
 
         public bool Equals(Habit? other)

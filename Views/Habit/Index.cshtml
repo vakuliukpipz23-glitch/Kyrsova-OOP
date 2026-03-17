@@ -22,10 +22,14 @@
                         <div class="calendar-day @(Model.Count > i && Model[i].IsCompletedToday() ? "completed" : "")"></div>
                     }
                 </div>
+                @{ 
+                    var completedToday = Model.Count(h => h.IsCompletedToday());
+                    var todayPercent = Model.Any() ? (completedToday / (double)Model.Count) * 100 : 0;
+                }
                 <div class="progress-bar">
-                    <div class="progress-bar-inner" style="width:@(Model.Any() ? Model.Average(h => h.GetCompletionRate()) : 0)%"></div>
+                    <div class="progress-bar-inner" style="width:@todayPercent%"></div>
                 </div>
-                <p class="muted">Прогрес сьогодні: <strong>@(Model.Any() ? Model.Average(h => h.GetCompletionRate()).ToString("0.0") : "0") %</strong></p>
+                <p class="muted">Прогрес сьогодні: <strong>@todayPercent.ToString("0.0") %</strong></p>
             </div>
 
             <div class="card" style="flex: 1;">
