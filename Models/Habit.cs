@@ -1,64 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kyrsova_OOP.Observers;
 
 namespace Kyrsova_OOP.Models
 {
-    public class Habit : IEquatable<Habit>
+    public class Habit
     {
-        public Habit()
-        {
-            Name = string.Empty;
-            CreatedDate = DateTime.Today;
-            Records = new List<HabitRecord>();
-        }
-
         public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime CreatedDate { get; set; }
-        
-        public string Title
-        {
-            get => Name;
-            set => Name = value;
-        }
+
+        public string Name { get; set; } = "";
+
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public List<HabitRecord> Records { get; set; } = new List<HabitRecord>();
 
-        private List<IObserver> observers = new List<IObserver>();
-
-        public Habit(string name)
-        {
-            Name = name;
-            CreatedDate = DateTime.Today;
-        }
-
-        public void AddObserver(IObserver observer)
-        {
-            observers.Add(observer);
-        }
-
-        public void RemoveObserver(IObserver observer)
-        {
-            observers.Remove(observer);
-        }
-
-        private void NotifyObservers()
-        {
-            foreach (var observer in observers)
-            {
-                observer.Update(this);
-            }
-        }
 
         public void AddCompletion()
         {
-            if (!Records.Any(r => r.Date.Date == DateTime.Today))
+            if (!IsCompletedToday())
             {
-                Records.Add(new HabitRecord { Date = DateTime.Today });
-
-                NotifyObservers();
+                Records.Add(new HabitRecord
+                {
+                    Date = DateTime.Today
+                });
             }
         }
 
@@ -67,76 +31,82 @@ namespace Kyrsova_OOP.Models
             return Records.Any(r => r.Date.Date == DateTime.Today);
         }
 
+        public int GetTotalCompletions()
+        {
+            return Records.Count;
+        }
+
+        public int GetLongestStreak()
+        {
+            if (!Records.Any()) return 0;
+
+            var sortedDates = Records
+                .Select(r => r.Date.Date)
+                .OrderBy(d => d)
+                .Distinct()
+                .ToList();
+
+            int maxStreak = 1;
+            int currentStreak = 1;
+
+            for (int i = 1; i < sortedDates.Count; i++)
+            {
+                if (sortedDates[i] == sortedDates[i - 1].AddDays(1))
+                {
+                    currentStreak++;
+                    maxStreak = Math.Max(maxStreak, currentStreak);
+                }
+                else
+                {
+                    currentStreak = 1;
+                }
+            }
+
+            return maxStreak;
+        }
+
         public int GetCurrentStreak()
         {
-            int streak = 0;
-            DateTime day = DateTime.Today;
+            if (!Records.Any()) return 0;
 
-            while (Records.Any(r => r.Date.Date == day))
+            var ordered = Records
+                .OrderByDescending(r => r.Date)
+                .ToList();
+
+            int streak = 0;
+            DateTime date = DateTime.Today;
+
+            foreach (var record in ordered)
             {
-                streak++;
-                day = day.AddDays(-1);
+                if (record.Date.Date == date)
+                {
+                    streak++;
+                    date = date.AddDays(-1);
+                }
+                else
+                {
+                    break;
+                }
             }
 
             return streak;
         }
 
-        public int GetLongestStreak()
-        {
-            if (Records.Count == 0) return 0;
-
-            var dates = Records
-                .Select(r => r.Date.Date)
-                .Distinct()
-                .OrderBy(d => d)
-                .ToList();
-
-            int longest = 1;
-            int current = 1;
-
-            for (int i = 1; i < dates.Count; i++)
-            {
-                if ((dates[i] - dates[i - 1]).Days == 1)
-                {
-                    current++;
-                    longest = Math.Max(longest, current);
-                }
-                else
-                {
-                    current = 1;
-                }
-            }
-
-            return longest;
-        }
-
-        public int GetTotalCompletions()
-        {
-            return Records?.Count ?? 0;
-        }
-
         public double GetCompletionRate()
         {
-            var total = GetTotalCompletions();
-            var days = (DateTime.Today - CreatedDate).Days + 1;
+            var start = CreatedDate.Date;
+            var end = DateTime.Today;
+            var days = (end - start).Days + 1;
             if (days <= 0) return 0;
 
-            var rate = (double)total / days * 100.0;
-            return Math.Min(100, rate); // Ensure values never exceed 100%
-        }
+            var completedDays = Records
+                .Select(r => r.Date.Date)
+                .Where(d => d >= start && d <= end)
+                .Distinct()
+                .Count();
 
-        public bool Equals(Habit? other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Id != 0 && other.Id != 0 ? Id == other.Id : string.Equals(Name, other.Name, StringComparison.Ordinal);
-        }
-
-        public override bool Equals(object? obj) => Equals(obj as Habit);
-
-        public override int GetHashCode()
-        {
-            return Id != 0 ? Id.GetHashCode() : (Name?.GetHashCode() ?? 0);
+            var rate = (double)completedDays / days * 100;
+            return Math.Clamp(rate, 0, 100);
         }
     }
 }

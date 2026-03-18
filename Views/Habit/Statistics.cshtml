@@ -27,7 +27,7 @@
         {
             <div class="habit-card">
                 <div class="habit-card__main">
-                    <div class="habit-title">@h.Title</div>
+                    <div class="habit-title">@h.Name</div>
                     <div class="habit-meta">Створено: @h.CreatedDate.ToShortDateString()</div>
                     <div class="habit-meta">Виконань: @h.GetTotalCompletions()</div>
                 </div>
@@ -49,8 +49,8 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(h => h.Title)));
-        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(h => h.GetTotalCompletions())));
+        const labels = [@Html.Raw(string.Join(",", Model.Select(h => "\"" + h.Name.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"")))];
+        const data = [@Html.Raw(string.Join(",", Model.Select(h => h.GetTotalCompletions().ToString())))];
 
         const ctx = document.getElementById('habitsChart').getContext('2d');
         new Chart(ctx, {

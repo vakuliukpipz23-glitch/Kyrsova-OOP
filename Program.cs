@@ -2,10 +2,16 @@ using Kyrsova_OOP.Repositories;
 using Kyrsova_OOP.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var db = new DatabaseContext();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=habits.db;Pooling=False";
+
+var db = new DatabaseContext(connectionString);
 db.Initialize();
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton(db);
 
 builder.Services.AddSingleton<IHabitRepository, HabitRepository>();
 builder.Services.AddSingleton<HabitManager>();

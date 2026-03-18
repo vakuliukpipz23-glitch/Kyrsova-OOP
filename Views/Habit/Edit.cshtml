@@ -7,11 +7,15 @@
 <div class="dashboard">
 	<div class="card">
 		<h2 class="card-title">Edit Habit</h2>
+		@if (ViewBag.Error != null)
+		{
+			<p class="text-danger">@ViewBag.Error</p>
+		}
 		<form method="post">
 			<input type="hidden" name="id" value="@Model.Id" />
 
 			<label class="muted">Name</label>
-			<input class="form-control" type="text" name="title" value="@Model.Title" />
+			<input class="form-control" type="text" name="name" value="@Model.Name" />
 
 			<div style="margin-top:16px">
 				<button class="btn" type="submit">Save</button>

@@ -5,9 +5,13 @@
 <div class="dashboard">
 	<div class="card">
 		<h2 class="card-title">Add Habit</h2>
+		@if (ViewBag.Error != null)
+		{
+			<p class="text-danger">@ViewBag.Error</p>
+		}
 		<form method="post">
 			<label class="muted">Name</label>
-			<input class="form-control" type="text" name="title" required />
+			<input class="form-control" type="text" name="name" required />
 			<div style="margin-top:16px">
 				<button class="btn" type="submit">Add</button>
 				<a class="btn btn-secondary" asp-controller="Habit" asp-action="Index">Back</a>

@@ -1,233 +1,270 @@
-using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+using System.Threading;
+using Microsoft.Data.Sqlite;
 using Kyrsova_OOP.Models;
 
 namespace Kyrsova_OOP.Repositories
 {
     public class HabitRepository : IHabitRepository
     {
-        private DatabaseContext db = new DatabaseContext();
-        private bool useFile = false;
-        private string filePath = string.Empty;
+        private readonly DatabaseContext _context;
+        private static readonly object WriteSync = new();
 
-        public HabitRepository()
+        public HabitRepository(DatabaseContext context)
         {
-            db.Initialize();
+            _context = context;
         }
 
-        // File-backed constructor used by tests
-        public HabitRepository(string filePath)
+        public IEnumerable<Habit> GetAll()
         {
-            this.filePath = filePath;
-            this.useFile = true;
+            var habits = new List<Habit>();
 
-            if (!File.Exists(filePath))
+            using var connection = _context.GetConnection();
+            connection.Open();
+            ConfigureConnection(connection);
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT Id, Name, CreatedDate FROM Habits";
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
             {
-                File.WriteAllText(filePath, JsonSerializer.Serialize(new List<Habit>()));
+                var habit = new Habit
+                {
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    CreatedDate = DateTime.Parse(reader.GetString(2))
+                };
+
+                habits.Add(habit);
             }
-        }
 
-        public List<Habit> GetAll()
-    {
-        if (useFile)
-        {
-            var text = File.ReadAllText(filePath);
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            return JsonSerializer.Deserialize<List<Habit>>(text, opts) ?? new List<Habit>();
-        }
-
-        var habits = new List<Habit>();
-
-        using var connection = db.GetConnection();
-        connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT Id, Name, CreatedDate FROM Habits";
-
-        using var reader = command.ExecuteReader();
-
-        while (reader.Read())
-        {
-            var habit = new Habit(reader.GetString(1))
+            foreach (var habit in habits)
             {
-                Id = reader.GetInt32(0),
-                CreatedDate = DateTime.Parse(reader.GetString(2))
-            };
+                habit.Records = GetRecords(connection, habit.Id);
+            }
 
-            habit.Records = GetRecords(habit.Id);
-
-            habits.Add(habit);
+            return habits;
         }
-
-        return habits;
-    }
 
         public Habit? GetById(int id)
-    {
-        if (useFile)
         {
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<Habit>>(File.ReadAllText(filePath), opts) ?? new List<Habit>();
-            return list.Find(h => h.Id == id);
-        }
+            using var connection = _context.GetConnection();
+            connection.Open();
+            ConfigureConnection(connection);
 
-        using var connection = db.GetConnection();
-        connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT Id, Name, CreatedDate FROM Habits WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
 
-        var command = connection.CreateCommand();
+            using var reader = command.ExecuteReader();
 
-        command.CommandText = "SELECT Id, Name, CreatedDate FROM Habits WHERE Id = $id";
-        command.Parameters.AddWithValue("$id", id);
+            Habit? habit = null;
 
-        using var reader = command.ExecuteReader();
-
-        if (reader.Read())
-        {
-            var habit = new Habit(reader.GetString(1))
+            if (reader.Read())
             {
-                Id = reader.GetInt32(0),
-                CreatedDate = DateTime.Parse(reader.GetString(2))
-            };
+                habit = new Habit
+                {
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    CreatedDate = DateTime.Parse(reader.GetString(2))
+                };
+            }
 
-            habit.Records = GetRecords(habit.Id);
+            if (habit is null)
+            {
+                return null;
+            }
 
+            habit.Records = GetRecords(connection, habit.Id);
             return habit;
         }
 
-        return null;
-    }
-
         public void Add(Habit habit)
-    {
-        if (useFile)
         {
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<Habit>>(File.ReadAllText(filePath), opts) ?? new List<Habit>();
-            var nextId = list.Count > 0 ? list.Max(h => h.Id) + 1 : 1;
-            habit.Id = nextId;
-            if (habit.CreatedDate == default) habit.CreatedDate = DateTime.Today;
-            list.Add(habit);
-            File.WriteAllText(filePath, JsonSerializer.Serialize(list));
-            return;
+            lock (WriteSync)
+            {
+                const int maxAttempts = 2;
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
+                        using var connection = _context.GetConnection();
+                        connection.Open();
+                        ConfigureConnection(connection);
+
+                        var command = connection.CreateCommand();
+                        command.CommandTimeout = 1;
+                        command.CommandText = @"
+                INSERT INTO Habits (Name, CreatedDate)
+                VALUES ($name, $createdDate);
+            ";
+
+                        command.Parameters.AddWithValue("$name", habit.Name);
+                        command.Parameters.AddWithValue("$createdDate", habit.CreatedDate.ToString("yyyy-MM-dd"));
+
+                        command.ExecuteNonQuery();
+
+                        command.CommandText = "SELECT last_insert_rowid();";
+                        habit.Id = Convert.ToInt32((long)command.ExecuteScalar()!);
+
+                        SaveRecords(connection, habit);
+                        return;
+                    }
+                    catch (SqliteException ex) when (ex.SqliteErrorCode == 5 && attempt < maxAttempts)
+                    {
+                        Thread.Sleep(75 * attempt);
+                    }
+                }
+
+                throw new InvalidOperationException("SQLite database is busy.");
+            }
         }
-
-        using var connection = db.GetConnection();
-        connection.Open();
-
-        var command = connection.CreateCommand();
-
-        command.CommandText =
-        @"INSERT INTO Habits (Name, CreatedDate)
-          VALUES ($name, $date)";
-
-        command.Parameters.AddWithValue("$name", habit.Name);
-        command.Parameters.AddWithValue("$date", habit.CreatedDate.ToString());
-
-        command.ExecuteNonQuery();
-    }
 
         public void Update(Habit habit)
-    {
-        if (useFile)
         {
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<Habit>>(File.ReadAllText(filePath), opts) ?? new List<Habit>();
-            var idx = list.FindIndex(h => h.Id == habit.Id);
-            if (idx >= 0)
+            lock (WriteSync)
             {
-                list[idx] = habit;
-                File.WriteAllText(filePath, JsonSerializer.Serialize(list));
+                const int maxAttempts = 2;
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
+                        using var connection = _context.GetConnection();
+                        connection.Open();
+                        ConfigureConnection(connection);
+
+                        var command = connection.CreateCommand();
+                        command.CommandTimeout = 1;
+                        command.CommandText = @"
+                UPDATE Habits 
+                SET Name = $name
+                WHERE Id = $id;
+            ";
+
+                        command.Parameters.AddWithValue("$name", habit.Name);
+                        command.Parameters.AddWithValue("$id", habit.Id);
+
+                        command.ExecuteNonQuery();
+
+                        SaveRecords(connection, habit);
+                        return;
+                    }
+                    catch (SqliteException ex) when (ex.SqliteErrorCode == 5 && attempt < maxAttempts)
+                    {
+                        Thread.Sleep(75 * attempt);
+                    }
+                }
+
+                throw new InvalidOperationException("SQLite database is busy.");
             }
-            return;
         }
-
-        using var connection = db.GetConnection();
-        connection.Open();
-
-        foreach (var record in habit.Records)
-        {
-            // Avoid re-inserting existing records (duplicate inserts can cause completion rate > 100%)
-            var checkCommand = connection.CreateCommand();
-            checkCommand.CommandText =
-                "SELECT COUNT(1) FROM HabitRecords WHERE HabitId = $habitId AND Date = $date";
-            checkCommand.Parameters.AddWithValue("$habitId", habit.Id);
-            checkCommand.Parameters.AddWithValue("$date", record.Date.ToString());
-
-            var exists = Convert.ToInt32(checkCommand.ExecuteScalar()) > 0;
-            if (exists)
-                continue;
-
-            var insertCommand = connection.CreateCommand();
-
-            insertCommand.CommandText =
-            @"INSERT INTO HabitRecords (HabitId, Date)
-              VALUES ($habitId, $date)";
-
-            insertCommand.Parameters.AddWithValue("$habitId", habit.Id);
-            insertCommand.Parameters.AddWithValue("$date", record.Date.ToString());
-
-            insertCommand.ExecuteNonQuery();
-        }
-    }
 
         public void Delete(int id)
-    {
-        if (useFile)
         {
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<Habit>>(File.ReadAllText(filePath), opts) ?? new List<Habit>();
-            list.RemoveAll(h => h.Id == id);
-            File.WriteAllText(filePath, JsonSerializer.Serialize(list));
-            return;
-        }
-
-        using var connection = db.GetConnection();
-        connection.Open();
-
-        var command = connection.CreateCommand();
-
-        command.CommandText = "DELETE FROM Habits WHERE Id=$id";
-        command.Parameters.AddWithValue("$id", id);
-
-        command.ExecuteNonQuery();
-    }
-
-        private List<HabitRecord> GetRecords(int habitId)
-    {
-        if (useFile)
-        {
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<Habit>>(File.ReadAllText(filePath), opts) ?? new List<Habit>();
-            var h = list.Find(x => x.Id == habitId);
-            return h?.Records ?? new List<HabitRecord>();
-        }
-
-        var records = new List<HabitRecord>();
-
-        using var connection = db.GetConnection();
-        connection.Open();
-
-        var command = connection.CreateCommand();
-
-        command.CommandText =
-        "SELECT Date FROM HabitRecords WHERE HabitId = $id";
-
-        command.Parameters.AddWithValue("$id", habitId);
-
-        using var reader = command.ExecuteReader();
-
-        while (reader.Read())
-        {
-            records.Add(new HabitRecord
+            if (!Monitor.TryEnter(WriteSync, 300))
             {
-                Date = DateTime.Parse(reader.GetString(0))
-            });
+                throw new InvalidOperationException("SQLite database is busy.");
+            }
+
+            try
+            {
+                const int maxAttempts = 2;
+
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
+                        using var connection = _context.GetConnection();
+                        connection.Open();
+                        ConfigureConnection(connection);
+
+                        using var transaction = connection.BeginTransaction();
+
+                        var recordsCommand = connection.CreateCommand();
+                        recordsCommand.Transaction = transaction;
+                        recordsCommand.CommandTimeout = 1;
+                        recordsCommand.CommandText = "DELETE FROM HabitRecords WHERE HabitId = $id";
+                        recordsCommand.Parameters.AddWithValue("$id", id);
+                        recordsCommand.ExecuteNonQuery();
+
+                        var command = connection.CreateCommand();
+                        command.Transaction = transaction;
+                        command.CommandTimeout = 1;
+                        command.CommandText = "DELETE FROM Habits WHERE Id = $id";
+                        command.Parameters.AddWithValue("$id", id);
+                        command.ExecuteNonQuery();
+
+                        transaction.Commit();
+                        return;
+                    }
+                    catch (SqliteException ex) when (ex.SqliteErrorCode == 5 && attempt < maxAttempts)
+                    {
+                        Thread.Sleep(75 * attempt);
+                    }
+                }
+
+                throw new InvalidOperationException("SQLite database is locked.");
+            }
+            finally
+            {
+                Monitor.Exit(WriteSync);
+            }
         }
 
-        return records;
-    }
+        private static void ConfigureConnection(SqliteConnection connection)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 250; PRAGMA foreign_keys = ON;";
+            command.ExecuteNonQuery();
+        }
+
+        private static List<HabitRecord> GetRecords(SqliteConnection connection, int habitId)
+        {
+            var records = new List<HabitRecord>();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT Id, Date
+                FROM HabitRecords
+                WHERE HabitId = $habitId
+                ORDER BY Date DESC;
+            ";
+            command.Parameters.AddWithValue("$habitId", habitId);
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                records.Add(new HabitRecord
+                {
+                    Id = reader.GetInt32(0),
+                    Date = DateTime.Parse(reader.GetString(1))
+                });
+            }
+
+            return records;
+        }
+
+        private static void SaveRecords(SqliteConnection connection, Habit habit)
+        {
+            var deleteCommand = connection.CreateCommand();
+            deleteCommand.CommandText = "DELETE FROM HabitRecords WHERE HabitId = $habitId";
+            deleteCommand.Parameters.AddWithValue("$habitId", habit.Id);
+            deleteCommand.ExecuteNonQuery();
+
+            foreach (var record in habit.Records)
+            {
+                var insertCommand = connection.CreateCommand();
+                insertCommand.CommandText = @"
+                    INSERT INTO HabitRecords (HabitId, Date)
+                    VALUES ($habitId, $date);
+                ";
+                insertCommand.Parameters.AddWithValue("$habitId", habit.Id);
+                insertCommand.Parameters.AddWithValue("$date", record.Date.ToString("yyyy-MM-dd"));
+                insertCommand.ExecuteNonQuery();
+            }
+        }
     }
 }

@@ -1,12 +1,12 @@
 @model Kyrsova_OOP.Models.Habit
 
 @{
-		ViewData["Title"] = Model?.Title ?? "Habit Details";
+		ViewData["Title"] = Model?.Name ?? "Habit Details";
 }
 
 <div class="dashboard">
 	<div class="card">
-		<h2 class="card-title">@Model.Title</h2>
+		<h2 class="card-title">@Model.Name</h2>
 		<p class="habit-meta">Created: @Model.CreatedDate.ToShortDateString()</p>
 
 		<ul class="stats-list">

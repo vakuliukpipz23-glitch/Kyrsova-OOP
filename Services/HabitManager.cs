@@ -1,28 +1,19 @@
 using System.Collections.Generic;
-using Kyrsova_OOP.Repositories;
-using Kyrsova_OOP.Strategies;
 using Kyrsova_OOP.Models;
+using Kyrsova_OOP.Repositories;
 
 namespace Kyrsova_OOP.Services
 {
     public class HabitManager
     {
         private readonly IHabitRepository repository;
-        private readonly INotificationStrategy notification;
 
-        public HabitManager(IHabitRepository repo, INotificationStrategy strategy)
+        public HabitManager(IHabitRepository repository)
         {
-            repository = repo;
-            notification = strategy;
+            this.repository = repository;
         }
 
-        // Backwards-compatible constructor used by tests
-        public HabitManager(IHabitRepository repo)
-            : this(repo, new Kyrsova_OOP.Strategies.NullNotification())
-        {
-        }
-
-        public List<Habit> GetAll()
+        public IEnumerable<Habit> GetAll()
         {
             return repository.GetAll();
         }
@@ -34,7 +25,24 @@ namespace Kyrsova_OOP.Services
 
         public void Create(string name)
         {
-            repository.Add(new Habit(name));
+            var habit = new Habit
+            {
+                Name = name
+            };
+
+            repository.Add(habit);
+        }
+
+        public void Update(int id, string name)
+        {
+            var habit = repository.GetById(id);
+            if (habit is null)
+            {
+                return;
+            }
+
+            habit.Name = name;
+            repository.Update(habit);
         }
 
         public void Delete(int id)
@@ -42,36 +50,17 @@ namespace Kyrsova_OOP.Services
             repository.Delete(id);
         }
 
-        public void MarkCompleted(int id)
+        public void Complete(int id)
         {
             var habit = repository.GetById(id);
 
-            if (habit == null) return;
+            if (habit is null)
+            {
+                return;
+            }
 
             habit.AddCompletion();
-
-            notification.Send($"Habit '{habit.Name}' completed today");
-
             repository.Update(habit);
         }
-
-        // Backwards-compatible API used by controllers/views
-        public List<Habit> GetHabits() => GetAll();
-
-        public void AddHabit(string title) => Create(title);
-
-        public Habit? GetHabit(int id) => Get(id);
-
-        public void EditHabit(int id, string title)
-        {
-            var habit = repository.GetById(id);
-            if (habit == null) return;
-            habit.Name = title;
-            repository.Update(habit);
-        }
-
-        public void DeleteHabit(int id) => Delete(id);
-
-        public void MarkHabitDone(int id) => MarkCompleted(id);
     }
 }

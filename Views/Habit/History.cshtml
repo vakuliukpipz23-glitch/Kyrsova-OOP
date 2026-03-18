@@ -1,13 +1,13 @@
 @model Kyrsova_OOP.Models.Habit
 
 @{
-    ViewData["Title"] = "History - " + (Model?.Title ?? "Habit");
+  ViewData["Title"] = "History - " + (Model?.Name ?? "Habit");
 }
 
 <div class="dashboard">
   <div class="card">
     <h2 class="card-title">Історія виконання звички</h2>
-    <p><strong>@Model.Title</strong></p>
+    <p><strong>@Model.Name</strong></p>
     <p><strong>Дата створення:</strong> @Model.CreatedDate.ToShortDateString()</p>
 
     <h3>Історія по днях</h3>

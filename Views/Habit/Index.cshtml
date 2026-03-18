@@ -2,6 +2,10 @@
 
 <div class="dashboard">
     <div class="card">
+        @if (TempData["DeleteError"] != null)
+        {
+            <div class="alert alert-danger" role="alert">@TempData["DeleteError"]</div>
+        }
         <div class="dashboard-header">
             <div>
                 <h1>Трекер звичок</h1>
@@ -51,7 +55,7 @@
             {
                 <div class="habit-card">
                     <div class="habit-card__main">
-                        <div class="habit-title">@habit.Title</div>
+                        <div class="habit-title">@habit.Name</div>
                         <div class="habit-meta">Створено: @habit.CreatedDate.ToShortDateString()</div>
                         <div class="habit-meta">Поточна серія: @habit.GetCurrentStreak() / Найдовша: @habit.GetLongestStreak()</div>
                     </div>
@@ -60,7 +64,10 @@
                         <a href="/Habit/Details/@habit.Id" class="btn btn-secondary">Деталі</a>
                         <a href="/Habit/History/@habit.Id" class="btn btn-secondary">Історія</a>
                         <a href="/Habit/Edit/@habit.Id" class="btn btn-secondary">Редагувати</a>
-                        <a href="/Habit/Delete/@habit.Id" class="btn btn-danger">Видалити</a>
+                        <form asp-controller="Habit" asp-action="Delete" asp-route-id="@habit.Id" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">Видалити</button>
+                        </form>
                     </div>
                 </div>
             }
