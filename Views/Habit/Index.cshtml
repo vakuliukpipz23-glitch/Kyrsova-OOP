@@ -6,6 +6,17 @@
         {
             <div class="alert alert-danger" role="alert">@TempData["DeleteError"]</div>
         }
+        @if (TempData["TestEmailStatus"] != null)
+        {
+            <div class="alert alert-info" role="alert">@TempData["TestEmailStatus"]</div>
+        }
+        @if (TempData["TestEmailPreview"] != null)
+        {
+            <div class="alert alert-info" role="alert">
+                <strong>Вміст листа:</strong>
+                <pre style="margin: 0.5rem 0 0; white-space: pre-wrap;">@TempData["TestEmailPreview"]</pre>
+            </div>
+        }
         <div class="dashboard-header">
             <div>
                 <h1>Трекер звичок</h1>
@@ -14,6 +25,10 @@
             <div class="dashboard-actions">
                 <a href="/Habit/Add" class="btn">+ Додати звичку</a>
                 <a href="/Habit/Statistics" class="btn btn-secondary">Статистика</a>
+                <form asp-controller="Habit" asp-action="SendTestEmail" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-secondary">Тестовий лист</button>
+                </form>
             </div>
         </div>
 

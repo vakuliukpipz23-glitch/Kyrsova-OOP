@@ -3,6 +3,8 @@ using Kyrsova_OOP.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Data Source=habits.db;Pooling=False";
 
@@ -13,9 +15,14 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton(db);
 
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+
 builder.Services.AddSingleton<IHabitRepository, HabitRepository>();
 builder.Services.AddSingleton<HabitManager>();
 builder.Services.AddSingleton<StatisticsService>();
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddSingleton<HabitReminderService>();
+builder.Services.AddHostedService<DailyReminderHostedService>();
 
 var app = builder.Build();
 

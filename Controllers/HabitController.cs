@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Text;
 using Microsoft.Data.Sqlite;
 using Kyrsova_OOP.Services;
 
@@ -9,11 +10,13 @@ namespace Kyrsova_OOP.Controllers
     {
         private readonly HabitManager manager;
         private readonly StatisticsService statistics;
+        private readonly IEmailSender emailSender;
 
-        public HabitController(HabitManager manager, StatisticsService statistics)
+        public HabitController(HabitManager manager, StatisticsService statistics, IEmailSender emailSender)
         {
             this.manager = manager;
             this.statistics = statistics;
+            this.emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -182,6 +185,48 @@ namespace Kyrsova_OOP.Controllers
             ViewBag.BestStreak = habits.Count == 0 ? 0 : habits.Max(h => statistics.GetLongestStreak(h));
 
             return View(habits);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendTestEmail()
+        {
+            try
+            {
+                var incomplete = manager.GetAll()
+                    .Where(h => !h.IsCompletedToday())
+                    .ToList();
+
+                if (incomplete.Count == 0)
+                {
+                    TempData["TestEmailStatus"] = "Всі звички виконані сьогодні. Нагадування не відправлено.";
+                    TempData.Remove("TestEmailPreview");
+                    return RedirectToAction("Index");
+                }
+
+                var builder = new StringBuilder();
+                builder.AppendLine("Ти не виконав деякі звички сьогодні:");
+                foreach (var habit in incomplete)
+                {
+                    builder.AppendLine($"- {habit.Name}");
+                }
+                builder.AppendLine();
+                builder.AppendLine("Будь ласка, виконай їх сьогодні.");
+
+                TempData["TestEmailPreview"] = builder.ToString().TrimEnd();
+
+                await emailSender.SendAsync(
+                    "Нагадування про звички",
+                    builder.ToString().TrimEnd(),
+                    HttpContext.RequestAborted);
+                TempData["TestEmailStatus"] = "Нагадування відправлено. Перевірте пошту або Spam.";
+            }
+            catch
+            {
+                TempData["TestEmailStatus"] = "Не вдалося відправити тестовий лист.";
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }
