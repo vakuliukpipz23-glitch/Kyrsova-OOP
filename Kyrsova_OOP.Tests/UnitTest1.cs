@@ -1,10 +1,15 @@
-﻿namespace Kyrsova_OOP.Tests;
+﻿using System;
+using System.IO;
 
-public class UnitTest1
+namespace Kyrsova_OOP.Tests;
+
+public static class DatabaseTestHelper
 {
-    [Fact]
-    public void Test1()
+    public static (DatabaseContext Context, string FilePath) CreateTempDatabase()
     {
-
+        var filePath = Path.Combine(Path.GetTempPath(), $"Kyrsova_OOP_Tests_{Guid.NewGuid():N}.db");
+        var context = new DatabaseContext($"Data Source={filePath}");
+        context.Initialize();
+        return (context, filePath);
     }
 }
